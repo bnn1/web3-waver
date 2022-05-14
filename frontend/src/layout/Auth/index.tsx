@@ -4,6 +4,7 @@ import { Main } from "../Main";
 import type { MetaMaskInpageProvider } from "@metamask/providers";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
+import { Maybe } from "@metamask/providers/dist/utils";
 
 export { AuthProvider, useAuthContext };
 
@@ -23,6 +24,8 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [getMetamask, setGetMetamask] = useState(false);
   const [account, setAccount] = useState<string>();
   const [pending, setPending] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const checkMetamask = () => {
     const { ethereum } = window;
     if (ethereum) {
@@ -32,6 +35,56 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     setGetMetamask(true);
     return false;
   };
+  const updateAccount = useCallback(
+    (accounts: Maybe<string[]>) => {
+      if (accounts && accounts[0] !== account) {
+        setAccount(accounts[0]);
+      }
+    },
+    [account]
+  );
+  const checkConnectedWallets = useCallback(async () => {
+    setLoading(true);
+    if (checkMetamask()) {
+      const { ethereum } = window;
+
+      try {
+        const accounts = await ethereum.request<string[]>({ method: "eth_accounts" });
+        updateAccount(accounts);
+      } catch (error) {}
+    }
+  }, [updateAccount]);
+  const connect = async () => {
+    if (checkMetamask()) {
+      setPending(true);
+      const { ethereum } = window;
+
+      try {
+        const accounts = await ethereum.request<[string]>({ method: "eth_requestAccounts" });
+        updateAccount(accounts);
+      } catch (error) {}
+    }
+  };
+
+  useEffect(() => {
+    checkConnectedWallets().finally(() => {
+      setLoading(false);
+    });
+  }, [checkConnectedWallets]);
+
+  useEffect(() => {
+    if (account) {
+      setPending(false);
+      const cb = (accounts: unknown) => {
+        setAccount(undefined);
+      };
+      window.ethereum.on("accountsChanged", cb);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", cb);
+      };
+    }
+  }, [account]);
 
   if (getMetamask) {
     return (
@@ -57,6 +110,10 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
         </Typography>
       </Main>
     );
+  }
+
+  if (loading) {
+    return <CircularProgress size={200} />;
   }
 
   return (

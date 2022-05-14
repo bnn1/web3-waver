@@ -1,4 +1,5 @@
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useAuthContext } from "../src/layout/Auth";
@@ -39,8 +40,13 @@ function HomePage() {
           >
             Wave Portal
           </Typography>
-          <Button variant={"contained"} onClick={connect} sx={{ fontSize: "2rem" }}>
-            Connect Wallet
+          <Button
+            variant={"contained"}
+            onClick={connect}
+            sx={{ fontSize: "2rem", mb: 10 }}
+            disabled={isPending}
+          >
+            {isPending ? "Connecting..." : "Connect Wallet 🦊"}
           </Button>
         </>
       )}
