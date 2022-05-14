@@ -1,31 +1,43 @@
 import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { useState } from "react";
+import { wavePortalContract } from "src/lib/wavePortalContract";
 import { useAuthContext } from "../src/layout/Auth";
 
 export default HomePage;
 
 function HomePage() {
   const { account, connect, isPending } = useAuthContext();
+  const [sendingWave, setSendingWave] = useState(false);
+  const wave = async () => {
+    if (wavePortalContract) {
+      setSendingWave(true);
+      const txn = await wavePortalContract.wave();
+      await txn.wait();
+    }
+  };
 
   return (
     <Stack justifyContent={"center"} alignItems={"center"} height={1} rowGap={4}>
       {account && (
-        <Stack component={"header"}>
-          <Typography fontSize={"4rem"}>
-            🎉 You are connected!{" "}
-            <Typography
-              fontSize={"4rem"}
-              display={"inline-block"}
-              sx={{ transform: "scale(-1,1)" }}
-              component={"span"}
-            >
-              🎉
-            </Typography>
-          </Typography>
-          <Typography>You can now start sending me waves</Typography>
-        </Stack>
+        <>
+          <Stack direction={"row"} alignItems={"center"}>
+            <Typography fontSize={"4rem"}>👋</Typography>
+            <Stack component={"header"} justifyContent={"center"} alignItems={"center"}>
+              <Typography fontSize={"4rem"}>Welcome</Typography>
+              <Typography>You can now start sending me waves</Typography>
+            </Stack>
+          </Stack>
+          <Button
+            variant={"contained"}
+            sx={{ fontSize: "2rem" }}
+            disabled={sendingWave}
+            onClick={wave}
+          >
+            Wave at me
+          </Button>
+        </>
       )}
       {!account && (
         <>

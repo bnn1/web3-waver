@@ -14,33 +14,66 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Typography from "@mui/material/Typography";
-
+import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Link from "next/link";
 export { Header };
 
 const Header = () => {
   const [disconnectAttempted, setDisconnectAttempted] = useState(false);
+  const [snackOpen, setSnackOpen] = useState(false);
+  const handleClose = () => {
+    setSnackOpen(false);
+  };
+  const handleOpen = () => {
+    setSnackOpen(true);
+  };
   const { account } = useAuthContext();
+  if (!account) return null;
   const disconnect = async () => {
     setDisconnectAttempted(true);
   };
   const closeDialog = () => {
     setDisconnectAttempted(false);
   };
+  const copyToClipboard = async () => {
+    await navigator.clipboard.writeText(account);
+    handleOpen();
+  };
 
   return (
     <Slide in={!!account}>
       <AppBar position={"sticky"}>
-        <Toolbar>
-          <List sx={{ width: 1, display: "flex", flexDirection: { xs: "column", sm: "row" } }}>
-            {["Wave at Me", "About"].map((text) => (
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <List sx={{ display: "flex", flex: 1, flexDirection: { xs: "column", sm: "row" } }}>
+            {[
+              { text: "Wave at Me", href: "/" },
+              { text: "Wave Gallery", href: "/wave-gallery" },
+            ].map(({ text, href }) => (
               <ListItem key={text} sx={{ width: "fit-content" }}>
-                <ListItemButton>{text}</ListItemButton>
+                <Link href={href} passHref>
+                  <ListItemButton>{text}</ListItemButton>
+                </Link>
               </ListItem>
             ))}
           </List>
-          <Button fullWidth sx={{ maxWidth: 200 }} onClick={disconnect}>
-            Disconnect wallet
-          </Button>
+          <Stack flex={1} justifyContent={"end"} alignItems={"end"}>
+            <Typography variant={"caption"}>
+              Connected as {account!.slice(0, 10)}...
+              <Tooltip title={account as string}>
+                <IconButton onClick={copyToClipboard}>
+                  <ContentCopyIcon sx={{ fontSize: 12 }} />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <Button fullWidth sx={{ maxWidth: 200 }} onClick={disconnect}>
+              Disconnect wallet
+            </Button>
+          </Stack>
         </Toolbar>
         <Dialog open={disconnectAttempted} onClose={closeDialog}>
           <DialogTitle variant={"h4"}>Sorry...</DialogTitle>
@@ -64,6 +97,21 @@ const Header = () => {
             <Button onClick={closeDialog}>OK</Button>
           </DialogActions>
         </Dialog>
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={6000}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleClose}
+            severity="success"
+            sx={{ width: "100%" }}
+            variant={"filled"}
+          >
+            Copied!
+          </Alert>
+        </Snackbar>
       </AppBar>
     </Slide>
   );
