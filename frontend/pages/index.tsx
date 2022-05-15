@@ -1,5 +1,10 @@
+/* eslint-disable react/no-unescaped-entities */
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
@@ -13,20 +18,38 @@ export default HomePage;
 function HomePage() {
   const { account, connect, isPending } = useAuthContext();
   const [sendingWave, setSendingWave] = useState(false);
+  const [error, setError] = useState("");
+  const [winner, setWinner] = useState("");
   const [mining, setMining] = useState<boolean>();
   const wave = async () => {
     if (wavePortalContract && textFieldRef.current) {
       setSendingWave(true);
-      const txn = await wavePortalContract.wave(textFieldRef.current.value, {
-        gasLimit: 300000,
-      });
-      textFieldRef.current.value = "";
-      setSendingWave(false);
-      setMining(true);
-      await txn.wait();
-      setMining(false);
+      try {
+        const txn = await wavePortalContract.wave(textFieldRef.current.value, {
+          gasLimit: 300000,
+        });
+        textFieldRef.current.value = "";
+        setSendingWave(false);
+        setMining(true);
+        await txn.wait();
+        setMining(false);
+      } catch (error) {
+        setError("Wait 15m");
+      }
     }
   };
+
+  useEffect(() => {
+    if (wavePortalContract) {
+      const onWin = (winner: string) => {
+        setWinner(winner);
+      };
+      wavePortalContract.on("WinPrize", onWin);
+      return () => {
+        wavePortalContract?.removeListener("WinPrize", onWin);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (mining === false) {
@@ -43,6 +66,15 @@ function HomePage() {
 
   return (
     <Stack justifyContent={"center"} alignItems={"center"} height={1}>
+      <Dialog open={winner === account} onClose={() => setWinner("")}>
+        <DialogTitle>Congrats! 🎉</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            You just won... *ta-da-da-da*
+            <Typography>0.001 ether!!!</Typography>
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
       <Snackbar
         open={mining}
         autoHideDuration={6000}
@@ -56,6 +88,21 @@ function HomePage() {
           variant={"filled"}
         >
           Mining transaction... Please wait
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setError("")}
+          severity={"error"}
+          sx={{ width: "100%" }}
+          variant={"filled"}
+        >
+          {error}
         </Alert>
       </Snackbar>
       <Snackbar
