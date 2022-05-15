@@ -7,8 +7,6 @@ const wavePortalContractCreator = async () => {
   try {
     if (typeof window === "undefined") return;
     const { ethereum } = window;
-    console.log("ONE", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
-
     if (!process.env.NEXT_PUBLIC_CONTRACT_ADDRESS) {
       throw new Error("Specify NEXT_PUBLIC_CONTRACT_ADDRESS in .env");
     }
@@ -29,4 +27,3 @@ const wavePortalContractCreator = async () => {
 };
 
 const wavePortalContract = await wavePortalContractCreator();
-console.log("WAVE CONTRACT:", wavePortalContract);

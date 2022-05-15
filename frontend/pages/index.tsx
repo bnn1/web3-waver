@@ -17,7 +17,9 @@ function HomePage() {
   const wave = async () => {
     if (wavePortalContract && textFieldRef.current) {
       setSendingWave(true);
-      const txn = await wavePortalContract.wave(textFieldRef.current.value);
+      const txn = await wavePortalContract.wave(textFieldRef.current.value, {
+        gasLimit: 300000,
+      });
       textFieldRef.current.value = "";
       setSendingWave(false);
       setMining(true);
