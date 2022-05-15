@@ -1,5 +1,7 @@
 {
   "solidity.packageDefaultDependenciesContractsDirectory": "",
-  "solidity.packageDefaultDependenciesDirectory": "backend/node_modules"
-
+  "solidity.packageDefaultDependenciesDirectory": "backend/node_modules",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  }
 }

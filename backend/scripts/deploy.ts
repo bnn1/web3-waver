@@ -2,17 +2,26 @@ import { ethers } from "hardhat";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const accountBalance = await deployer.getBalance();
+  let accountBalance = await deployer.getBalance();
+
+  console.log(
+    "Account balance: %s ETH",
+    ethers.utils.formatEther(accountBalance.toString())
+  );
 
   console.log(deployer.address, "is now deploying a contract...");
-  console.log("Account balance: %sETH", accountBalance.toString());
-
   const waveContractFactory = await ethers.getContractFactory("WavePortal");
-  const waveContract = await waveContractFactory.deploy();
+  const waveContract = await waveContractFactory.deploy({
+    value: ethers.utils.parseEther("0.025"),
+  });
 
   await waveContract.deployed();
-
-  console.log("WavePortal contract address:", waveContract.address);
+  accountBalance = await deployer.getBalance();
+  console.log("Deployed to:", waveContract.address);
+  console.log(
+    "Account balance: %s ETH",
+    ethers.utils.formatEther(accountBalance.toString())
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

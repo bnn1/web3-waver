@@ -21,11 +21,16 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Link from "next/link";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 export { Header };
 
 const Header = () => {
   const [disconnectAttempted, setDisconnectAttempted] = useState(false);
   const [snackOpen, setSnackOpen] = useState(false);
+  const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down("md"));
+  const desktop = useMediaQuery(theme.breakpoints.up("md"));
   const handleClose = () => {
     setSnackOpen(false);
   };
@@ -48,33 +53,37 @@ const Header = () => {
   return (
     <Slide in={!!account}>
       <AppBar position={"sticky"}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <List sx={{ display: "flex", flex: 1, flexDirection: { xs: "column", sm: "row" } }}>
-            {[
-              { text: "Wave at Me", href: "/" },
-              { text: "Wave Gallery", href: "/wave-gallery" },
-            ].map(({ text, href }) => (
-              <ListItem key={text} sx={{ width: "fit-content" }}>
-                <Link href={href} passHref>
-                  <ListItemButton>{text}</ListItemButton>
-                </Link>
-              </ListItem>
-            ))}
-          </List>
-          <Stack flex={1} justifyContent={"end"} alignItems={"end"}>
-            <Typography variant={"caption"}>
-              Connected as {account!.slice(0, 10)}...
-              <Tooltip title={account as string}>
-                <IconButton onClick={copyToClipboard}>
-                  <ContentCopyIcon sx={{ fontSize: 12 }} />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <Button fullWidth sx={{ maxWidth: 200 }} onClick={disconnect}>
-              Disconnect wallet
-            </Button>
-          </Stack>
-        </Toolbar>
+        {desktop && (
+          <Toolbar sx={{ justifyContent: "space-between" }}>
+            <List
+              sx={{ display: "flex", flex: 1, flexDirection: { xs: "column", sm: "row" } }}
+            >
+              {[
+                { text: "Wave at Me", href: "/" },
+                { text: "Wave Gallery", href: "/wave-gallery" },
+              ].map(({ text, href }) => (
+                <ListItem key={text} sx={{ width: "fit-content" }}>
+                  <Link href={href} passHref>
+                    <ListItemButton>{text}</ListItemButton>
+                  </Link>
+                </ListItem>
+              ))}
+            </List>
+            <Stack flex={1} justifyContent={"end"} alignItems={"end"}>
+              <Typography variant={"caption"}>
+                Connected as {account!.slice(0, 10)}...
+                <Tooltip title={account as string}>
+                  <IconButton onClick={copyToClipboard}>
+                    <ContentCopyIcon sx={{ fontSize: 12 }} />
+                  </IconButton>
+                </Tooltip>
+              </Typography>
+              <Button fullWidth sx={{ maxWidth: 200 }} onClick={disconnect}>
+                Disconnect wallet
+              </Button>
+            </Stack>
+          </Toolbar>
+        )}
         <Dialog open={disconnectAttempted} onClose={closeDialog}>
           <DialogTitle variant={"h4"}>Sorry...</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", rowGap: 1 }}>

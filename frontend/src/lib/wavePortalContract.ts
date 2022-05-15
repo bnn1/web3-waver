@@ -22,8 +22,6 @@ const wavePortalContractCreator = async () => {
       wavePortalAbi.abi,
       signer
     );
-
-    console.log("CONTRACT:", contract);
     return contract;
   } catch (error) {
     console.error(error);

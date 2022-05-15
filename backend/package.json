@@ -8,6 +8,7 @@
     "compile": "hardhat compile",
     "run-once": "hardhat run scripts/run.ts",
     "deploy:localhost": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:goerli": "hardhat run scripts/deploy.ts --network goerli",
     "dev": "hardhat node"
   },
   "keywords": [],
@@ -25,7 +26,7 @@
     "@typescript-eslint/eslint-plugin": "^4.29.1",
     "@typescript-eslint/parser": "^4.29.1",
     "chai": "^4.2.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.1",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-standard": "^16.0.3",
@@ -44,5 +45,8 @@
     "ts-node": "^10.1.0",
     "typechain": "^5.1.2",
     "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.6.0"
   }
 }
