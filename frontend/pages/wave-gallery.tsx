@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -8,11 +9,17 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { BigNumber } from "ethers";
 import { useEffect } from "react";
 import { useState } from "react";
 import { wavePortalContract } from "src/lib/wavePortalContract";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 export default WaveGalleryPage;
 
@@ -27,6 +34,9 @@ function WaveGalleryPage() {
   const [waves, setWaves] = useState(0);
   const [wavers, setWavers] = useState<null | Waver[]>(null);
   const [loading, setLoading] = useState(false);
+  const [snackOpen, setSnackOpen] = useState(false);
+  const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const getWaves = async () => {
     setLoading(true);
@@ -65,6 +75,18 @@ function WaveGalleryPage() {
       setLoading(false);
     });
   }, []);
+  const handleClose = () => {
+    setSnackOpen(false);
+  };
+  const handleOpen = () => {
+    setSnackOpen(true);
+  };
+
+  const copyToClipboard = async (address: string) => {
+    await navigator.clipboard.writeText(address);
+    handleOpen();
+  };
+
   return (
     <Stack justifyContent={"center"} alignItems={"center"} height={1} rowGap={4}>
       {loading ? (
@@ -88,10 +110,20 @@ function WaveGalleryPage() {
                     <TableCell>{date}</TableCell>
                     <TableCell>
                       <Box
-                        maxWidth={{ xs: 100, sm: 150, md: "unset" }}
-                        sx={{ wordWrap: "break-word" }}
+                        maxWidth={{
+                          xs: 100,
+                          sm: 150,
+                          md: "unset",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
                       >
-                        {address}
+                        {mobile ? address.slice(0, 6) + "..." : address}
+                        <Tooltip title={address as string}>
+                          <IconButton onClick={() => copyToClipboard(address)}>
+                            <ContentCopyIcon sx={{ fontSize: 12 }} />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     </TableCell>
                     <TableCell sx={{ width: 3 / 5 }}>{message}</TableCell>
@@ -102,6 +134,25 @@ function WaveGalleryPage() {
           </TableContainer>
         </>
       )}
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={
+          mobile
+            ? { vertical: "top", horizontal: "center" }
+            : { vertical: "bottom", horizontal: "right" }
+        }
+      >
+        <Alert
+          onClose={handleClose}
+          severity="success"
+          sx={{ width: "100%" }}
+          variant={"filled"}
+        >
+          Copied!
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 }

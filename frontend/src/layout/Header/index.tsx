@@ -23,14 +23,22 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import Drawer from "@mui/material/Drawer";
+import MenuIcon from "@mui/icons-material/Menu";
 export { Header };
-
 const Header = () => {
   const [disconnectAttempted, setDisconnectAttempted] = useState(false);
   const [snackOpen, setSnackOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down("md"));
   const desktop = useMediaQuery(theme.breakpoints.up("md"));
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
   const handleClose = () => {
     setSnackOpen(false);
   };
@@ -41,6 +49,9 @@ const Header = () => {
   if (!account) return null;
   const disconnect = async () => {
     setDisconnectAttempted(true);
+    if (mobileMenuOpen) {
+      closeMobileMenu();
+    }
   };
   const closeDialog = () => {
     setDisconnectAttempted(false);
@@ -84,6 +95,58 @@ const Header = () => {
             </Stack>
           </Toolbar>
         )}
+        {mobile && (
+          <Toolbar sx={{ justifyContent: "flex-end" }}>
+            <Drawer open={mobileMenuOpen} onClose={closeMobileMenu} anchor={"bottom"}>
+              <Stack rowGap={2} px={3} pt={4}>
+                <List
+                  sx={{
+                    display: "flex",
+                    flex: 1,
+                    flexDirection: { xs: "column" },
+                    rowGap: 2,
+                  }}
+                >
+                  {[
+                    { text: "Wave at Me", href: "/" },
+                    { text: "Wave Gallery", href: "/wave-gallery" },
+                  ].map(({ text, href }) => (
+                    <ListItem key={text} sx={{ width: "fit-content", p: 0, fontSize: 24 }}>
+                      <Link href={href} passHref>
+                        <ListItemButton
+                          sx={{ width: "fit-content", p: 0 }}
+                          onClick={closeMobileMenu}
+                        >
+                          {text}
+                        </ListItemButton>
+                      </Link>
+                    </ListItem>
+                  ))}
+                </List>
+                <Stack flex={1} pb={4} rowGap={2}>
+                  <Typography variant={"caption"} fontSize={18}>
+                    Connected as {account!.slice(0, 16)}...
+                    <Tooltip title={account as string}>
+                      <IconButton onClick={copyToClipboard}>
+                        <ContentCopyIcon sx={{ fontSize: 12 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </Typography>
+                  <Button
+                    fullWidth
+                    sx={{ p: 0, justifyContent: "flex-start", fontSize: 24 }}
+                    onClick={disconnect}
+                  >
+                    Disconnect wallet
+                  </Button>
+                </Stack>
+              </Stack>
+            </Drawer>
+            <IconButton onClick={toggleMobileMenu}>
+              <MenuIcon />
+            </IconButton>
+          </Toolbar>
+        )}
         <Dialog open={disconnectAttempted} onClose={closeDialog}>
           <DialogTitle variant={"h4"}>Sorry...</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", rowGap: 1 }}>
@@ -110,7 +173,11 @@ const Header = () => {
           open={snackOpen}
           autoHideDuration={6000}
           onClose={handleClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          anchorOrigin={
+            mobile
+              ? { vertical: "top", horizontal: "center" }
+              : { vertical: "bottom", horizontal: "right" }
+          }
         >
           <Alert
             onClose={handleClose}
